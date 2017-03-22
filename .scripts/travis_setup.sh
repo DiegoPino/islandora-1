@@ -31,10 +31,10 @@ phpenv rehash
 echo "Drush setup drupal site"
 cd web
 drush si --db-url=mysql://drupal:drupal@localhost/drupal --yes
-drush runserver 127.0.0.1:8282 --php-cgi=$HOME/.phpenv/shims/php-cgi &
+drush runserver 127.0.0.1:8282 &
 until netstat -an 2>/dev/null | grep '8282.*LISTEN'; do true; done
 echo "Enable simpletest module"
-drush en -y simpletest
+drush --uri=127.0.0.1:8282 en  -y simpletest
 
 echo "Setup ActiveMQ"
 cd /opt
