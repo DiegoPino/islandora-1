@@ -31,9 +31,3 @@ script:
   - php core/scripts/run-tests.sh --url http://127.0.0.1:8282 --verbose --php `which php` --module "islandora"
 
 notifications:
-  irc:
-    channels:
-      - "irc.freenode.org#islandora"
-    on_success: change
-    on_failure: always
-    skip_join: true

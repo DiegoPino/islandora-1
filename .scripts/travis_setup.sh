@@ -32,7 +32,7 @@ echo "Drush setup drupal site"
 cd web
 drush si --db-url=mysql://drupal:drupal@localhost/drupal --yes
 drush runserver 127.0.0.1:8282 &
-until netstat -an 2>/dev/null | grep '8282.*LISTEN'; do true; done
+until curl -s 127.0.0.1:8282; do true; done > /dev/null
 echo "Enable simpletest module"
 drush --uri=127.0.0.1:8282 en  -y simpletest
 
