@@ -1,7 +1,10 @@
 <?php
 
 namespace Drupal\Tests\islandora\Kernel;
+
+use Drupal\Component\Utility\Random;
 use \Drupal\islandora\Entity\FedoraResourceType;
+
 
 trait FedoraContentTypeCreationTrait {
 
@@ -17,9 +20,10 @@ trait FedoraContentTypeCreationTrait {
    */
   protected function createFedoraResourceContentType(array $values = array()) {
     // Find a non-existent random type name.
+    $random = new Random();
     if (!isset($values['type'])) {
       do {
-        $id = strtolower(new \Drupal\Component\Utility\Random(8));
+        $id = strtolower($random->string(8));
       } while (FedoraResourceType::load($id));
     }
     else {

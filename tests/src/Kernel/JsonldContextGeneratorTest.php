@@ -3,6 +3,7 @@
 namespace Drupal\Tests\islandora\Kernel;
 
 use Drupal\islandora\RdfBundleSolver\JsonldContextGenerator;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests the Json-LD context Generator methods and simple integration.
@@ -10,11 +11,20 @@ use Drupal\islandora\RdfBundleSolver\JsonldContextGenerator;
  * @group islandora
  * @coversDefaultClass \Drupal\islandora\RdfBundleSolver\JsonldContextGenerator
  */
-class JsonldContextGeneratorTest extends IslandoraKernelTestBase {
+class JsonldContextGeneratorTest extends KernelTestBase {
 
   use FedoraContentTypeCreationTrait {
     createFedoraResourceContentType as drupalCreateFedoraContentType;
   }
+  public static $modules = [
+    'system',
+    'rdf',
+    'islandora',
+    'entity_test',
+    'rdf_test_namespaces',
+  ];
+
+
   /**
    * The entity manager service.
    *
@@ -41,18 +51,20 @@ class JsonldContextGeneratorTest extends IslandoraKernelTestBase {
    */
   public function setUp() {
     parent::setUp();
-    $mapping_config_name = "rdf.mapping.fedora_resource.test_bundle";
-    $types = ['schema:Thing'];
-    // Save bundle mapping config.
-    $rdfMapping = rdf_get_mapping('fedora_resource', 'rdf_source')
-      ->setBundleMapping(['types' => $types])
-      ->save();
-    // Test that config file was saved.
-    $mapping_config = \Drupal::configFactory()->listAll('rdf.mapping.');
-    // Just test code while debugging.
-    $this->pass(var_dump($mapping_config));
-    $this->pass(var_dump($rdfMapping));
 
+    $types = ['schema:Thing'];
+    $mapping = [
+      'properties' => ['schema:dateCreated'],
+      'datatype' => 'xsd:dateTime',
+      'datatype_callback' => ['callable' => 'Drupal\rdf\CommonDataConverter::dateIso8601Value'],
+    ];
+
+    // Save bundle mapping config.
+    $rdfMapping = rdf_get_mapping('entity_test', 'rdf_source')
+      ->setBundleMapping(['types' => $types])
+      ->setFieldMapping('created', $mapping)
+      ->save();
+    // Initialize our generator.
     $this->theJsonldContextGenerator = new JsonldContextGenerator(
         $this->container->get('entity_field.manager'),
         $this->container->get('entity_type.bundle.info'),
@@ -68,11 +80,11 @@ class JsonldContextGeneratorTest extends IslandoraKernelTestBase {
    */
   public function testGetContext() {
     // Test with known asserts.
-    $context = $this->theJsonldContextGenerator->getContext('fedora_resource.rdf_source');
+    $context = $this->theJsonldContextGenerator->getContext('entity_test.rdf_source');
     $context_as_array = json_decode($context, TRUE);
-
     $this->assertTrue(is_array($context_as_array), 'JSON-LD Context generated has correct structure for known Bundle');
-    $this->assertTrue(strpos('{"@context":{"schema":"http://schema.org/"', (string) $context) !== FALSE, "JSON-LD Context generated contains the expected values for known Bundle");
+
+    $this->assertTrue(strpos($context, '"schema": "http://schema.org/"') !== FALSE, "JSON-LD Context generated contains the expected values for known Bundle");
 
   }
 
@@ -85,7 +97,7 @@ class JsonldContextGeneratorTest extends IslandoraKernelTestBase {
   public function testGetContextException() {
     // This should throw the expected Exception.
     $newFedoraEntity = $this->drupalCreateFedoraContentType();
-    error_log(var_dump($newFedoraEntity->id(), TRUE));
+    $this->pass($newFedoraEntity->id);
     $this->theJsonldContextGenerator->getContext('fedora_resource.' . $newFedoraEntity->id());
 
   }
