@@ -102,4 +102,32 @@ class JsonldContextGeneratorTest extends KernelTestBase {
 
   }
 
+  /**
+   * @covers \Drupal\islandora\RdfBundleSolver\JsonldContextGenerator::generateContext
+   */
+  public function testGenerateContext() {
+    // Test with known asserts.
+    $rdfMapping = rdf_get_mapping('entity_test', 'rdf_source');
+    $context = $this->theJsonldContextGenerator->generateContext($rdfMapping);
+    $context_as_array = json_decode($context, TRUE);
+    $this->assertTrue(is_array($context_as_array), 'JSON-LD Context generated has correct structure for known Bundle');
+
+    $this->assertTrue(strpos($context, '"schema": "http://schema.org/"') !== FALSE, "JSON-LD Context generated contains the expected values for known Bundle");
+
+  }
+
+  /**
+   * Tests Exception in case of no rdf type.
+   *
+   * @expectedException \Exception
+   * @covers \Drupal\islandora\RdfBundleSolver\JsonldContextGenerator::generateContext
+   */
+  public function testGenerateContextException() {
+    // This should throw the expected Exception.
+    $newFedoraEntity = $this->drupalCreateFedoraContentType();
+    $rdfMapping = rdf_get_mapping('fedora_resource', $newFedoraEntity->id());
+    $this->theJsonldContextGenerator->getContext('fedora_resource.' . $newFedoraEntity->id());
+
+  }
+
 }
