@@ -3,9 +3,11 @@
 namespace Drupal\Tests\islandora\Kernel;
 
 use Drupal\Component\Utility\Random;
-use \Drupal\islandora\Entity\FedoraResourceType;
+use Drupal\islandora\Entity\FedoraResourceType;
 
-
+/**
+ * Trait that aids in the creation of a fedora resource type bundle.
+ */
 trait FedoraContentTypeCreationTrait {
 
   /**
@@ -18,7 +20,7 @@ trait FedoraContentTypeCreationTrait {
    * @return \Drupal\islandora\Entity\FedoraResourceType
    *   Created content type.
    */
-  protected function createFedoraResourceContentType(array $values = array()) {
+  protected function createFedoraResourceContentType(array $values = []) {
     // Find a non-existent random type name.
     $random = new Random();
     if (!isset($values['type'])) {
@@ -29,10 +31,10 @@ trait FedoraContentTypeCreationTrait {
     else {
       $id = $values['type'];
     }
-    $values += array(
+    $values += [
       'type' => $id,
       'name' => $id,
-    );
+    ];
     $type = FedoraResourceType::create($values);
     $type->save();
     return $type;
